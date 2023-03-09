@@ -26,3 +26,19 @@ sed -i '/pam_pwquality.so/a\password    requisite                               
 #apply change 
 authselect apply-changes
 
+#check passwordless
+min=`grep '^UID_MIN' /etc/login.defs | awk '{print $2}'`
+max=`grep '^UID_MAX' /etc/login.defs | awk '{print $2}'`
+
+all=`cat fake_passwd`
+for i in $all;do
+  acct=`echo $i | cut -d : -f 1`
+  id=`echo $i | cut -d : -f 3`
+  if [ $id -le $max ] && [ $id -ge $min ]
+    then
+      if grep -q "^$acct:\!\!" fake_shadow
+        then
+          echo 'give me a password'
+      fi
+  fi
+done
