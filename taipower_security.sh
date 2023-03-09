@@ -53,7 +53,7 @@ for i in $all;do
       if grep -q "^$acct:\!\!" /etc/shadow
         then
           echo "Give default password to $acct"
-          echo "#EDC4rfv%TGB" | passwd --stdin "$acct"
+          echo "#EDC4rfv%TGB" | passwd --stdin "$acct" #default password 345
       fi
   fi
 done
