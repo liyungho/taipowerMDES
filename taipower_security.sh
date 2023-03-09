@@ -26,19 +26,34 @@ sed -i '/pam_pwquality.so/a\password    requisite                               
 #apply change 
 authselect apply-changes
 
-#check passwordless
+#set password quality
+sed -i '/minlen/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\minlen = 12' /etc/security/pwquality.conf
+sed -i '/minclass/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\minclass = 4' /etc/security/pwquality.conf
+sed -i '/dcredit/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\dcredit = -1' /etc/security/pwquality.conf
+sed -i '/ucredit/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\ucredit = -1' /etc/security/pwquality.conf
+sed -i '/lcredit/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\lcredit = -1' /etc/security/pwquality.conf
+sed -i '/ocredit/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\ocredit = -1' /etc/security/pwquality.conf
+sed -i '/maxclassrepeat/s/^/#/' /etc/security/pwquality.conf && sed -i '$a\maxclassrepeat = 2' /etc/security/pwquality.conf
+
+#check accounts without password
 min=`grep '^UID_MIN' /etc/login.defs | awk '{print $2}'`
 max=`grep '^UID_MAX' /etc/login.defs | awk '{print $2}'`
 
-all=`cat fake_passwd`
+if [ ! -f "/etc/shadow" ]
+  then
+    /usr/sbin/pwconv
+fi
+
+all=`cat /etc/passwd`
 for i in $all;do
   acct=`echo $i | cut -d : -f 1`
   id=`echo $i | cut -d : -f 3`
   if [ $id -le $max ] && [ $id -ge $min ]
     then
-      if grep -q "^$acct:\!\!" fake_shadow
+      if grep -q "^$acct:\!\!" /etc/shadow
         then
-          echo 'give me a password'
+          echo "Give default password to $acct"
+          echo "#EDC4rfv%TGB" | passwd --stdin "$acct"
       fi
   fi
 done
